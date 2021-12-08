@@ -1,0 +1,1 @@
+rootProject.name = "com.chatmen.ktor-c-men"
