@@ -5,9 +5,8 @@ import com.chatmen.data.repository.chat.ChatRepository
 import com.chatmen.data.websocket.WsClientMessage
 import com.chatmen.data.websocket.WsServerMessage
 import com.chatmen.util.WebSocketObject
+import com.google.gson.Gson
 import io.ktor.http.cio.websocket.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
 
 class ChatController(
@@ -51,7 +50,7 @@ class ChatController(
 
         chatRepository.insertMessage(messageEntity)
 
-        val frameText = Json.encodeToString(wsServerMessage)
+        val frameText = Gson().toJson(wsServerMessage)
         chat!!.members.forEach { member ->
             onlineUsers[member]?.send(Frame.Text("${WebSocketObject.MESSAGE.ordinal}#$frameText"))
         }

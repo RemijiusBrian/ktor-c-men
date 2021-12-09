@@ -1,9 +1,7 @@
 package com.chatmen.data.websocket
 
 import com.chatmen.data.model.Message
-import kotlinx.serialization.Serializable
 
-@Serializable
 data class WsClientMessage(
     val toUsername: String,
     val text: String,

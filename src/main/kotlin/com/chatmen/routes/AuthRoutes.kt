@@ -21,7 +21,8 @@ fun Route.loginUser(
     jwtAudience: String,
     jwtSecret: String
 ) {
-    post("api/user/login") {
+    post("/api/user/login") {
+        println("AppDebug: Request Received")
         val request = call.receiveOrNull<LoginRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post

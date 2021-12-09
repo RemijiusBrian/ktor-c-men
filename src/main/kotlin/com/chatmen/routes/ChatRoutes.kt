@@ -6,6 +6,7 @@ import com.chatmen.service.chat.ChatService
 import com.chatmen.util.Constants
 import com.chatmen.util.QueryParams
 import com.chatmen.util.WebSocketObject
+import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -14,8 +15,6 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
 fun Route.getChatsForUser(chatService: ChatService) {
     authenticate {
@@ -72,7 +71,7 @@ fun Route.chatWebSocket(chatController: ChatController) {
                                 return@webSocket
                             }
                             val json = frameText.substring(delimiterIndex + 1, frameText.length)
-                            handleWebSocket(username, chatController, type, frameText, json)
+                            handleWebSocket(username, Gson(), chatController, type, frameText, json)
                         }
                         else -> Unit
                     }
@@ -89,6 +88,7 @@ fun Route.chatWebSocket(chatController: ChatController) {
 
 suspend fun handleWebSocket(
     username: String,
+    gson: Gson,
     chatController: ChatController,
     type: Int,
     frameText: String,
@@ -96,7 +96,7 @@ suspend fun handleWebSocket(
 ) {
     when (type) {
         WebSocketObject.MESSAGE.ordinal -> {
-            val message = Json.decodeFromString<WsClientMessage>(json)
+            val message = gson.fromJson(json, WsClientMessage::class.java)
             chatController.sendMessage(username, message)
         }
     }

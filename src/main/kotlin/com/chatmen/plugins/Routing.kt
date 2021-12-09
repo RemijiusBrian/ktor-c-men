@@ -29,8 +29,8 @@ fun Application.configureRouting() {
         )
 
         // Chat Service
-        getChatsForUser(chatService)
-        getMessagesForChat(chatService)
-        chatWebSocket(chatController)
+//        getChatsForUser(chatService)
+//        getMessagesForChat(chatService)
+//        chatWebSocket(chatController)
     }
 }

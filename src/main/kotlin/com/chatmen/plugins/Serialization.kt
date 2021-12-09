@@ -2,10 +2,10 @@ package com.chatmen.plugins
 
 import io.ktor.application.*
 import io.ktor.features.*
-import io.ktor.serialization.*
+import io.ktor.gson.*
 
 fun Application.configureSerialization() {
     install(ContentNegotiation) {
-        json()
+        gson()
     }
 }
