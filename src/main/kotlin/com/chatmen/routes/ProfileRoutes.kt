@@ -1,6 +1,6 @@
 package com.chatmen.routes
 
-import com.chatmen.service.UserService
+import com.chatmen.service.MemberService
 import com.chatmen.util.QueryParams
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -8,7 +8,7 @@ import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
 
-fun Route.getProfile(userService: UserService) {
+fun Route.getProfile(memberService: MemberService) {
     authenticate {
         get("/api/user/profile") {
             val username = call.parameters[QueryParams.USERNAME]
@@ -17,7 +17,7 @@ fun Route.getProfile(userService: UserService) {
                 return@get
             }
 
-            // val profileResponse = userService.getUserProfile(username, call.username)
+            val profileResponse = memberService.getMemberProfile(username, username)
         }
     }
 }

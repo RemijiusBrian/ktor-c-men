@@ -6,10 +6,11 @@ import com.chatmen.data.request.CreateAccountRequest
 import com.chatmen.data.request.LoginRequest
 import com.chatmen.data.response.AuthResponse
 import com.chatmen.data.response.BasicApiResponse
-import com.chatmen.service.UserService
+import com.chatmen.service.MemberService
 import com.chatmen.util.ApiResponseMessages.FIELDS_BLANK
 import com.chatmen.util.ApiResponseMessages.INVALID_CREDENTIALS
 import com.chatmen.util.ApiResponseMessages.USERNAME_ALREADY_EXISTS
+import com.chatmen.util.ApiResponseMessages.USER_NOT_FOUND
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -18,16 +19,16 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import java.util.*
 
-fun Route.createUser(
-    userService: UserService,
+fun Route.createMemberAccount(
+    memberService: MemberService,
 ) {
-    post("/api/user/create") {
+    post("/api/member/create") {
         val request = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
 
-        if (userService.doesUsernameExist(request.username)) {
+        if (memberService.doesMemberExist(request.username)) {
             call.respond(
                 BasicApiResponse<Unit>(
                     successful = false,
@@ -36,8 +37,8 @@ fun Route.createUser(
             )
         }
 
-        when (userService.validateCreationRequest(request)) {
-            UserService.ValidationEvent.ErrorFieldEmpty -> {
+        when (memberService.validateCreationRequest(request)) {
+            MemberService.ValidationEvent.ErrorFieldEmpty -> {
                 call.respond(
                     BasicApiResponse<Unit>(
                         successful = false,
@@ -45,21 +46,21 @@ fun Route.createUser(
                     )
                 )
             }
-            UserService.ValidationEvent.Success -> {
-                userService.createUser(request)
+            MemberService.ValidationEvent.Success -> {
+                memberService.createMember(request)
                 call.respond(BasicApiResponse<Unit>(successful = true))
             }
         }
     }
 }
 
-fun Route.loginUser(
-    userService: UserService,
+fun Route.loginMember(
+    memberService: MemberService,
     jwtIssuer: String,
     jwtAudience: String,
     jwtSecret: String
 ) {
-    post("/api/user/login") {
+    post("/api/member/login") {
         val request = call.receiveOrNull<LoginRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
@@ -70,18 +71,18 @@ fun Route.loginUser(
             return@post
         }
 
-        val user = userService.getUserByUsername(request.username) ?: kotlin.run {
+        val user = memberService.getMemberByUsername(request.username) ?: kotlin.run {
             call.respond(
                 HttpStatusCode.OK,
                 BasicApiResponse<Unit>(
                     successful = false,
-                    message = INVALID_CREDENTIALS
+                    message = USER_NOT_FOUND
                 )
             )
             return@post
         }
 
-        val isPasswordCorrect = userService.isPasswordValid(
+        val isPasswordCorrect = memberService.isPasswordValid(
             enteredPassword = request.password,
             actualPassword = user.password
         )
@@ -118,7 +119,7 @@ fun Route.loginUser(
 
 fun Route.authenticate() {
     authenticate {
-        get("/api/user/authenticate") {
+        get("/api/member/authenticate") {
             call.respond(HttpStatusCode.OK)
         }
     }

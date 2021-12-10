@@ -1,8 +1,8 @@
 package com.chatmen.data.repository.chat
 
 import com.chatmen.data.model.Chat
+import com.chatmen.data.model.Member
 import com.chatmen.data.model.Message
-import com.chatmen.data.model.User
 import com.chatmen.data.response.ChatDto
 import com.mongodb.client.result.InsertOneResult
 import org.litote.kmongo.`in`
@@ -17,7 +17,7 @@ class ChatRepositoryImpl(
 
     private val chats = db.getCollection<Chat>()
     private val messages = db.getCollection<Message>()
-    private val users = db.getCollection<User>()
+    private val users = db.getCollection<Member>()
 
     override suspend fun getChatsForUser(username: String): List<ChatDto> {
         return chats.find(Chat::members contains username)
@@ -71,14 +71,12 @@ class ChatRepositoryImpl(
         chats.updateOneById(chatId, setValue(Chat::lastMessageId, lastMessageId))
     }
 
-    override suspend fun doesChatByUsersExist(users: List<String>): Boolean {
-        return chats.find(Chat::members `in` users).first() != null
+    override suspend fun doesChatByMembersExist(members: List<String>): Boolean {
+        return chats.find(Chat::members `in` members).first() != null
     }
 
-    override suspend fun getMembersOfChat(chatId: String): List<User> {
+    override suspend fun getMembersOfChat(chatId: String): List<Member> {
         val chat = chats.findOneById(chatId)
-        return users.find(
-            User::username `in` chat!!.members
-        ).toList()
+        return users.find(Member::username `in` chat!!.members).toList()
     }
 }

@@ -2,7 +2,7 @@ package com.chatmen.data.repository.chat
 
 import com.chatmen.data.model.Chat
 import com.chatmen.data.model.Message
-import com.chatmen.data.model.User
+import com.chatmen.data.model.Member
 import com.chatmen.data.response.ChatDto
 import com.mongodb.client.result.InsertOneResult
 
@@ -21,11 +21,11 @@ interface ChatRepository {
         chatIconUrl: String? = null
     ): InsertOneResult
 
-    suspend fun getMembersOfChat(chatId: String): List<User>
+    suspend fun getMembersOfChat(chatId: String): List<Member>
 
     suspend fun insertMessage(message: Message)
 
     suspend fun updateLastMessageForChat(chatId: String, lastMessageId: String)
 
-    suspend fun doesChatByUsersExist(users: List<String>): Boolean
+    suspend fun doesChatByMembersExist(members: List<String>): Boolean
 }

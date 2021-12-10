@@ -1,9 +1,9 @@
 package com.chatmen.plugins
 
 import com.chatmen.routes.authenticate
-import com.chatmen.routes.createUser
-import com.chatmen.routes.loginUser
-import com.chatmen.service.UserService
+import com.chatmen.routes.createMemberAccount
+import com.chatmen.routes.loginMember
+import com.chatmen.service.MemberService
 import com.chatmen.service.chat.ChatController
 import com.chatmen.service.chat.ChatService
 import io.ktor.application.*
@@ -13,7 +13,7 @@ import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
 
-    val userService: UserService by inject() // User Service
+    val memberService: MemberService by inject() // User Service
     val chatService: ChatService by inject() // Chat Service
     val chatController: ChatController by inject() // Chat Controller
 
@@ -24,9 +24,9 @@ fun Application.configureRouting() {
     install(Routing) {
         // Auth Routes
         authenticate()
-        createUser(userService)
-        loginUser(
-            userService = userService,
+        createMemberAccount(memberService)
+        loginMember(
+            memberService = memberService,
             jwtIssuer = jwtIssuer,
             jwtAudience = jwtAudience,
             jwtSecret = jwtSecret
