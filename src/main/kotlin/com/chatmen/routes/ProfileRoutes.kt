@@ -17,7 +17,7 @@ fun Route.getProfile(memberService: MemberService) {
                 return@get
             }
 
-            val profileResponse = memberService.getMemberProfile(username, username)
+            // val profileResponse = memberService.getMemberProfile(username, username)
         }
     }
 }
