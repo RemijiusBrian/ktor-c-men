@@ -16,4 +16,8 @@ class UserRepositoryImpl(
     override suspend fun getAllUsers(): List<User> {
         return users.find().toList()
     }
+
+    override suspend fun insertUser(user: User) {
+        users.insertOne(user)
+    }
 }

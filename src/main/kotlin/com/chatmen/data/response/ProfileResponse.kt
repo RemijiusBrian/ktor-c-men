@@ -1,12 +1,9 @@
-package com.chatmen.data.model
+package com.chatmen.data.response
 
-import org.bson.codecs.pojo.annotations.BsonId
-
-data class User(
-    @BsonId
+data class ProfileResponse(
     val username: String,
-    val password: String,
     val name: String,
+    val isOwnProfile: Boolean,
     val email: String? = null,
     val profilePictureUrl: String? = null,
     val bio: String? = null

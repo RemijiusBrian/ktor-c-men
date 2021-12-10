@@ -9,6 +9,7 @@ data class Chat(
     val timestamp: Long,
     val name: String? = null,
     val iconUrl: String? = null,
+    val description: String? = null,
     @BsonId
     val id: String = ObjectId().toString()
 )

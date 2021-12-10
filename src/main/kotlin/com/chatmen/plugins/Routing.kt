@@ -1,10 +1,13 @@
 package com.chatmen.plugins
 
-import com.chatmen.routes.*
+import com.chatmen.routes.authenticate
+import com.chatmen.routes.createUser
+import com.chatmen.routes.loginUser
 import com.chatmen.service.UserService
 import com.chatmen.service.chat.ChatController
 import com.chatmen.service.chat.ChatService
 import io.ktor.application.*
+import io.ktor.http.content.*
 import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 
@@ -21,6 +24,7 @@ fun Application.configureRouting() {
     install(Routing) {
         // Auth Routes
         authenticate()
+        createUser(userService)
         loginUser(
             userService = userService,
             jwtIssuer = jwtIssuer,
@@ -32,5 +36,10 @@ fun Application.configureRouting() {
 //        getChatsForUser(chatService)
 //        getMessagesForChat(chatService)
 //        chatWebSocket(chatController)
+
+        // Static Resources
+        static {
+            resources("static")
+        }
     }
 }
