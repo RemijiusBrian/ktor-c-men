@@ -28,9 +28,10 @@ class ChatRepositoryImpl(
                 ChatDto(
                     chatId = chat.id,
                     name = chat.name,
+                    description = chat.description,
+                    timestamp = chat.timestamp,
                     chatIconUrl = chat.iconUrl,
-                    lastMessage = lastMessage?.text,
-                    lastMessageTimestamp = lastMessage?.timestamp
+                    lastMessage = lastMessage?.text
                 )
             }
     }

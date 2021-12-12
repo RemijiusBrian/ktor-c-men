@@ -20,7 +20,7 @@ class MemberService(
             Member(
                 username = request.username,
                 password = request.password,
-                name = request.name,
+                name = request.name ?: request.username,
                 email = request.email,
                 profilePictureUrl = Constants.DEFAULT_PROFILE_PICTURE_PATH
             )
