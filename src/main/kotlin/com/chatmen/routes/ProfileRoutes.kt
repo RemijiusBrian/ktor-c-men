@@ -16,7 +16,6 @@ fun Route.getProfile(memberService: MemberService) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
             }
-
             // val profileResponse = memberService.getMemberProfile(username, username)
         }
     }
