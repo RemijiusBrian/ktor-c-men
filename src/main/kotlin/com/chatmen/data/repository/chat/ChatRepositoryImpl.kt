@@ -8,7 +8,6 @@ import com.mongodb.client.result.InsertOneResult
 import org.litote.kmongo.`in`
 import org.litote.kmongo.contains
 import org.litote.kmongo.coroutine.CoroutineDatabase
-import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
 
 class ChatRepositoryImpl(
@@ -17,31 +16,26 @@ class ChatRepositoryImpl(
 
     private val chats = db.getCollection<Chat>()
     private val messages = db.getCollection<Message>()
-    private val users = db.getCollection<Member>()
+    private val members = db.getCollection<Member>()
 
-    override suspend fun getChatsForUser(username: String): List<ChatDto> {
-        return chats.find(Chat::members contains username)
+    override suspend fun getChatsForMember(member: String): List<ChatDto> {
+        return chats.find(Chat::members contains member)
             .descendingSort(Chat::timestamp)
             .toList()
             .map { chat ->
                 val lastMessage = chat.lastMessageId?.let { messages.findOneById(it) }
+                val remoteUsername = chat.members.find { it != member }!!
+                val remoteMember = members.findOneById(remoteUsername)!!
                 ChatDto(
                     chatId = chat.id,
-                    name = chat.name,
+                    name = chat.name ?: remoteMember.username,
                     description = chat.description,
                     timestamp = chat.timestamp,
-                    chatIconUrl = chat.iconUrl,
-                    lastMessage = lastMessage?.text
+                    chatIconUrl = chat.iconUrl ?: remoteMember.profilePictureUrl,
+                    lastMessage = lastMessage?.text,
+                    isGroup = chat.members.size > 2
                 )
             }
-    }
-
-    override suspend fun getMessagesForChat(chatId: String, page: Int, pageSize: Int): List<Message> {
-        return messages.find(Message::chatId eq chatId)
-            .skip(page * pageSize)
-            .limit(pageSize)
-            .ascendingSort(Message::timestamp)
-            .toList()
     }
 
     override suspend fun getChatById(chatId: String): Chat? {
@@ -52,17 +46,20 @@ class ChatRepositoryImpl(
         members: List<String>,
         name: String?,
         lastMessageId: String?,
-        chatIconUrl: String?
-    ): InsertOneResult {
-        val chat = Chat(
+        chatIconUrl: String?,
+        description: String?,
+        id: String
+    ): InsertOneResult = chats.insertOne(
+        Chat(
             members = members,
             lastMessageId = lastMessageId,
             timestamp = System.currentTimeMillis(),
             name = name,
-            iconUrl = chatIconUrl
+            iconUrl = chatIconUrl,
+            description = description,
+            id = id
         )
-        return chats.insertOne(chat)
-    }
+    )
 
     override suspend fun insertMessage(message: Message) {
         messages.insertOne(message)
@@ -78,6 +75,6 @@ class ChatRepositoryImpl(
 
     override suspend fun getMembersOfChat(chatId: String): List<Member> {
         val chat = chats.findOneById(chatId)
-        return users.find(Member::username `in` chat!!.members).toList()
+        return members.find(Member::username `in` chat!!.members).toList()
     }
 }

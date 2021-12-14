@@ -36,7 +36,7 @@ val MainModule = module {
     // Member Service
     single { MemberService(get()) }
     // Chat Service
-    single { ChatService(get()) }
+    single { ChatService(get(), get()) }
 
     // Chat Controller
     single { ChatController(get()) }

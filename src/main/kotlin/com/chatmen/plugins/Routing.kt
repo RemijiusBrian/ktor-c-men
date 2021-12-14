@@ -1,11 +1,10 @@
 package com.chatmen.plugins
 
-import com.chatmen.routes.authenticate
-import com.chatmen.routes.createMemberAccount
-import com.chatmen.routes.loginMember
+import com.chatmen.routes.*
 import com.chatmen.service.MemberService
 import com.chatmen.service.chat.ChatController
 import com.chatmen.service.chat.ChatService
+import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.http.content.*
 import io.ktor.routing.*
@@ -13,9 +12,11 @@ import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
 
-    val memberService: MemberService by inject() // User Service
+    val memberService: MemberService by inject() // Member Service
     val chatService: ChatService by inject() // Chat Service
     val chatController: ChatController by inject() // Chat Controller
+
+    val gson: Gson by inject()
 
     val jwtIssuer = environment.config.property("jwt.domain").getString()
     val jwtAudience = environment.config.property("jwt.audience").getString()
@@ -32,10 +33,13 @@ fun Application.configureRouting() {
             jwtSecret = jwtSecret
         )
 
-        // Chat Service
-//        getChatsForUser(chatService)
-//        getMessagesForChat(chatService)
-//        chatWebSocket(chatController)
+        // Member Routes
+        getAllMembers(memberService)
+
+        // Chat Routes
+        getChatsForUser(chatService)
+        createChat(chatService)
+        chatWebSocket(chatController, gson)
 
         // Static Resources
         static {

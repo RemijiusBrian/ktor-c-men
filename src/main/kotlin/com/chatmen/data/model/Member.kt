@@ -6,8 +6,6 @@ data class Member(
     @BsonId
     val username: String,
     val password: String,
-    val name: String,
-    val email: String? = null,
     val profilePictureUrl: String? = null,
     val bio: String? = null,
 )

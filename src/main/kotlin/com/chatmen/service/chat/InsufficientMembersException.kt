@@ -1,4 +1,3 @@
 package com.chatmen.service.chat
 
-class InsufficientMembersException {
-}
+class InsufficientMembersException : Exception("Insufficient Members To Create A Chat")

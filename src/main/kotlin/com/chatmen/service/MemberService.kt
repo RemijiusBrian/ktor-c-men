@@ -9,6 +9,11 @@ import com.chatmen.util.Constants
 class MemberService(
     private val repository: MemberRepository
 ) {
+
+    suspend fun getAllMembers(): List<Member> {
+        return repository.getAllMembers()
+    }
+
     suspend fun getMemberByUsername(username: String): Member? {
         return repository.getMemberByUsername(username)
     }
@@ -20,8 +25,6 @@ class MemberService(
             Member(
                 username = request.username,
                 password = request.password,
-                name = request.name ?: request.username,
-                email = request.email,
                 profilePictureUrl = Constants.DEFAULT_PROFILE_PICTURE_PATH
             )
         )
@@ -31,9 +34,7 @@ class MemberService(
         val member = repository.getMemberByUsername(username) ?: return null
         return ProfileResponse(
             username = member.username,
-            name = member.name,
             isOwnProfile = member.username == calledUsername,
-            email = member.email,
             profilePictureUrl = member.profilePictureUrl,
             bio = member.bio
         )

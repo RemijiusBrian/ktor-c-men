@@ -30,3 +30,6 @@ fun Application.configureSecurity() {
 
 val JWTPrincipal.username: String?
     get() = getClaim("username", String::class)
+
+val ApplicationCall.username: String?
+    get() = principal<JWTPrincipal>()?.username
