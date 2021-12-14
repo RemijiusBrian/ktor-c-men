@@ -1,5 +1,6 @@
 package com.chatmen.service.chat
 
+import com.chatmen.data.model.UnreadMessage
 import com.chatmen.data.repository.chat.ChatRepository
 import com.chatmen.data.websocket.WsClientMessage
 import com.chatmen.data.websocket.WsServerMessage
@@ -10,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class ChatController(
     private val chatRepository: ChatRepository,
+    private val gson: Gson
 ) {
     private val onlineMembers = ConcurrentHashMap<String, WebSocketSession>()
 
@@ -23,11 +25,9 @@ class ChatController(
     }
 
     @Throws(InsufficientMembersException::class, ChatCreationException::class)
-    suspend fun sendMessage(
-        username: String,
-        message: WsClientMessage,
-        gson: Gson
-    ) {
+    suspend fun sendMessage(username: String, frameText: String) {
+
+        val message = gson.fromJson(frameText, WsClientMessage::class.java)
         if (message.members.isEmpty()) throw InsufficientMembersException()
 
         var newMessage: WsClientMessage = message
@@ -63,12 +63,36 @@ class ChatController(
             chatId = chat.id
         )
 
-        val frameText = gson.toJson(wsServerMessage)
+        // Save Unread If Any Members Offline
+        saveUnreadIfAnyMembersOffline(chat.members, messageId)
+
+        val wsJsonMessage = gson.toJson(wsServerMessage)
         chat.members.forEach { member ->
-            onlineMembers[member]?.send(Frame.Text(frameText))
+            onlineMembers[member]?.send(Frame.Text(wsJsonMessage))
         }
 
         // Update Last Message For Chat
         chatRepository.updateLastMessageForChat(chat.id, messageEntity.id)
+    }
+
+    // Save Unread If Any Members Offline
+    private suspend fun saveUnreadIfAnyMembersOffline(chatMembers: List<String>, messageId: String) {
+        val membersOffline = chatMembers.filter { !onlineMembers.containsKey(it) }
+        if (membersOffline.isNotEmpty()) {
+            chatRepository.insertOrUpdateUnreadMessage(
+                UnreadMessage(messageId, membersOffline)
+            )
+        }
+    }
+
+    suspend fun sendUnreadMessagesIfAny(member: String) {
+        val unreadMessages = chatRepository.getUnreadMessagesForMember(member)
+
+        if (unreadMessages.isEmpty()) return
+
+        unreadMessages.forEach { message ->
+            val frameText = gson.toJson(message.toWsServerMessage())
+            onlineMembers[member]?.send(frameText)
+        }
     }
 }

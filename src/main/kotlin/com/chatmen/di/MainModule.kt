@@ -39,7 +39,7 @@ val MainModule = module {
     single { ChatService(get(), get()) }
 
     // Chat Controller
-    single { ChatController(get()) }
+    single { ChatController(get(), get()) }
 
     // Gson
     single { Gson() }

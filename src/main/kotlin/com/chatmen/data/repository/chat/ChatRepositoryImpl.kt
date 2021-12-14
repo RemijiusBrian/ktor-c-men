@@ -3,6 +3,7 @@ package com.chatmen.data.repository.chat
 import com.chatmen.data.model.Chat
 import com.chatmen.data.model.Member
 import com.chatmen.data.model.Message
+import com.chatmen.data.model.UnreadMessage
 import com.chatmen.data.response.ChatDto
 import com.mongodb.client.result.InsertOneResult
 import org.litote.kmongo.`in`
@@ -17,6 +18,7 @@ class ChatRepositoryImpl(
     private val chats = db.getCollection<Chat>()
     private val messages = db.getCollection<Message>()
     private val members = db.getCollection<Member>()
+    private val unreadMessages = db.getCollection<UnreadMessage>()
 
     override suspend fun getChatsForMember(member: String): List<ChatDto> {
         return chats.find(Chat::members contains member)
@@ -76,5 +78,25 @@ class ChatRepositoryImpl(
     override suspend fun getMembersOfChat(chatId: String): List<Member> {
         val chat = chats.findOneById(chatId)
         return members.find(Member::username `in` chat!!.members).toList()
+    }
+
+    override suspend fun insertOrUpdateUnreadMessage(unreadMessage: UnreadMessage) {
+        val message = unreadMessages.findOneById(unreadMessage.messageId)
+        if (message == null) {
+            unreadMessages.insertOne(unreadMessage)
+        } else {
+            val newToMembers = message.toMembers + unreadMessage.toMembers
+            unreadMessages.updateOneById(
+                unreadMessage.messageId,
+                setValue(UnreadMessage::toMembers, newToMembers)
+            )
+        }
+    }
+
+    override suspend fun getUnreadMessagesForMember(member: String): List<Message> {
+        val unreadMessages = unreadMessages.find(UnreadMessage::toMembers contains member).toList()
+            .map { it.messageId }
+
+        return messages.find(Message::id `in` unreadMessages).toList()
     }
 }

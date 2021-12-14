@@ -2,14 +2,12 @@ package com.chatmen.routes
 
 import com.chatmen.data.request.CreateChatRequest
 import com.chatmen.data.response.BasicApiResponse
-import com.chatmen.data.websocket.WsClientMessage
 import com.chatmen.plugins.username
 import com.chatmen.service.chat.ChatController
 import com.chatmen.service.chat.ChatCreationException
 import com.chatmen.service.chat.ChatService
 import com.chatmen.service.chat.InsufficientMembersException
 import com.chatmen.util.ApiResponseMessages.ERROR_CREATING_CHAT
-import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -54,14 +52,12 @@ fun Route.createChat(chatService: ChatService) {
     }
 }
 
-fun Route.chatWebSocket(
-    chatController: ChatController,
-    gson: Gson
-) {
+fun Route.chatWebSocket(chatController: ChatController) {
     authenticate {
         webSocket("/api/chat/web-socket") {
             val username = call.username!!
             chatController.onJoin(username, this)
+            chatController.sendUnreadMessagesIfAny(username)
             try {
                 incoming.consumeEach { frame ->
                     when (frame) {
@@ -79,7 +75,7 @@ fun Route.chatWebSocket(
                             }*/
 
                             // val json = frameText.substring(delimiterIndex + 1, frameText.length)
-                            handleWebSocket(username, gson, chatController, frameText)
+                            handleWebSocket(username, chatController, frameText)
                         }
                         else -> Unit
                     }
@@ -100,12 +96,10 @@ fun Route.chatWebSocket(
 
 suspend fun handleWebSocket(
     username: String,
-    gson: Gson,
     chatController: ChatController,
     frameText: String,
 ) {
-    val message = gson.fromJson(frameText, WsClientMessage::class.java)
-    chatController.sendMessage(username, message, gson)
+    chatController.sendMessage(username, frameText)
     /*when (type) {
         WebSocketObject.MESSAGE.ordinal -> {
             val message = gson.fromJson(json, WsClientMessage::class.java)
