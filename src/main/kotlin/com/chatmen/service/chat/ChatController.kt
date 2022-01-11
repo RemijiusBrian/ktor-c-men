@@ -93,6 +93,7 @@ class ChatController(
         unreadMessages.forEach { message ->
             val frameText = gson.toJson(message.toWsServerMessage())
             onlineMembers[member]?.send(frameText)
+            chatRepository.removeMemberFromUnread(message.id, member)
         }
     }
 }

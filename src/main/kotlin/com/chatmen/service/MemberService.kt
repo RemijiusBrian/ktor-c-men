@@ -3,11 +3,12 @@ package com.chatmen.service
 import com.chatmen.data.model.Member
 import com.chatmen.data.repository.member.MemberRepository
 import com.chatmen.data.request.CreateAccountRequest
+import com.chatmen.data.request.UpdateProfileRequest
 import com.chatmen.data.response.ProfileResponse
 import com.chatmen.util.Constants
 
 class MemberService(
-    private val repository: MemberRepository
+    private val repository: MemberRepository,
 ) {
 
     suspend fun getAllMembers(): List<Member> {
@@ -30,15 +31,21 @@ class MemberService(
         )
     }
 
-    suspend fun getMemberProfile(username: String, calledUsername: String): ProfileResponse? {
+    suspend fun getMemberProfile(username: String, callingUsername: String): ProfileResponse? {
         val member = repository.getMemberByUsername(username) ?: return null
         return ProfileResponse(
             username = member.username,
-            isOwnProfile = member.username == calledUsername,
+            isOwnProfile = member.username == callingUsername,
             profilePictureUrl = member.profilePictureUrl,
             bio = member.bio
         )
     }
+
+    suspend fun updateMemberProfile(
+        username: String,
+        profileImageUrl: String?,
+        updateProfileRequest: UpdateProfileRequest
+    ): Boolean = repository.updateMemberProfile(username, profileImageUrl, updateProfileRequest)
 
     suspend fun doesMemberExist(username: String): Boolean {
         return repository.getMemberByUsername(username) != null

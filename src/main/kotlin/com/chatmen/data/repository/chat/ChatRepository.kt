@@ -34,4 +34,6 @@ interface ChatRepository {
     suspend fun insertOrUpdateUnreadMessage(unreadMessage: UnreadMessage)
 
     suspend fun getUnreadMessagesForMember(member: String): List<Message>
+
+    suspend fun removeMemberFromUnread(unreadMessage: String, member: String)
 }

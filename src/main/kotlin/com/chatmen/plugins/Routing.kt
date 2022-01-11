@@ -32,6 +32,7 @@ fun Application.configureRouting() {
 
         // Member Routes
         getAllMembers(memberService)
+        updateMemberProfile(memberService)
 
         // Chat Routes
         getChatsForUser(chatService)

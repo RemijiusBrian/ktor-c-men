@@ -9,6 +9,7 @@ import com.mongodb.client.result.InsertOneResult
 import org.litote.kmongo.`in`
 import org.litote.kmongo.contains
 import org.litote.kmongo.coroutine.CoroutineDatabase
+import org.litote.kmongo.pull
 import org.litote.kmongo.setValue
 
 class ChatRepositoryImpl(
@@ -98,5 +99,12 @@ class ChatRepositoryImpl(
             .map { it.messageId }
 
         return messages.find(Message::id `in` unreadMessages).toList()
+    }
+
+    override suspend fun removeMemberFromUnread(unreadMessage: String, member: String) {
+        unreadMessages.updateOneById(unreadMessage, pull(UnreadMessage::toMembers, member))
+        if (unreadMessages.findOneById(unreadMessage)?.toMembers.isNullOrEmpty()) {
+            unreadMessages.deleteOneById(unreadMessage)
+        }
     }
 }
